@@ -1,0 +1,93 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src * data: gap: https://ssl.gstatic.com; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval'">
+    <script src="components/loader.js"></script>
+    <script src="lib/onsenui/js/onsenui.min.js"></script>
+    <link rel="stylesheet" href="components/loader.css">
+    <link rel="stylesheet" href="lib/onsenui/css/onsenui.css">
+    <link rel="stylesheet" href="lib/onsenui/css/onsen-css-components.css">
+    <link rel="stylesheet" href="css/style.css">
+    <script>
+        //問題データ(json)を取得
+        var question; //問題データ
+        $.getJSON("data.json", function(result){
+            question = result;
+            // console.log(question);
+        })
+        
+        //スタートボタンが押されたとき
+        var score;  //スコア
+        var current;    //現在の問題番号
+        function start(){
+            score=0;
+            current=0;
+            //問題ページ(question.html)に遷移する
+            document.getElementById("navi").pushPage("question.html");
+        }
+        
+        //問題ページに問題を表示する
+        //init　:そのページを開いたとき
+        document.addEventListener("init",function(){
+            var page=event.target;
+            // alert("aa");
+            if(page.id=="quetion-page"){
+                var title="第"+question[current].no+"問:"+question[current].title;
+                page.querySelector('#title').innerHTML=title;
+                page.querySelector('#button1').innerHTML=question[current].choice1;
+                page.querySelector('#button2').innerHTML=question[current].choice2;
+                page.querySelector('#button3').innerHTML=question[current].choice3;
+                page.querySelector('#button4').innerHTML=question[current].choice4;
+            }else if(page.id=="question-result"){
+                $("#restart").on("click",function(){
+                    //top.htmlに戻る
+                    document.getElementById("navi").resetToP       age("top.html",{animation:"fade"});
+                })
+            }
+        })
+        
+        //回答を選択した場合
+        function select(choiceNo){
+            var icon;
+            // alert(choiceNo);
+            //正解かどうかを判断する
+            if(choiceNo == question[current].answer){
+                
+                score++;//正解数を加算
+                icon="circle-o"//〇アイコン
+            }else{
+                // alert("b");
+                icon="close"//×アイコン
+            }
+            //次のページに遷移する
+            document.getElementById("navi").pushPage("result.html").then(function(page){
+                page.querySelector("#result-icon").setAttribute("icon",icon);
+            })
+        }
+        //つぎへボタンを押されたら
+        function next(){
+            current++;  //問題インデックスを加算する
+            
+            //まだ問題があるか
+            if(current < question.length){   
+                document.getElementById("navi").pushPage("question.html");
+            }else{
+                //問題がない場合、何問中何問正解したかを表示するページに遷移
+                document.getElementById("navi").pushPage("quesiton_result.html").then(function(page){
+                    page.querySelector("#question_result").innerHTML=(score);
+                    page.querySelector("#question_sum").innerHTML=(question.length);
+                });
+            }
+            
+        }
+    </script>
+</head>
+
+<body>
+    <ons-navigator id="navi" page="top.html"> </ons-navigator>
+</body>
+
+</html>
